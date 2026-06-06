@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Aven's Australian Adventure Golf!</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="mapScreen" class="stage screen" aria-label="Aven's Australian Adventure Golf">
+      <section class="map" aria-label="高爾夫冒險地圖">
+        <img
+          class="map-art"
+          src="assets/golf-adventure-map.jpg"
+          alt="Aven's Australian Adventure Golf 遊戲地圖，有九個關卡、開始挑戰按鈕與澳洲指標"
+        />
+
+        <button class="hotspot hole h1" id="hole1" type="button" aria-label="第 1 關"></button>
+        <button class="hotspot hole h2" id="hole2" type="button" aria-label="第 2 關"></button>
+        <button class="hotspot hole h3" id="hole3" type="button" aria-label="第 3 關"></button>
+        <button class="hotspot hole h4" id="hole4" type="button" aria-label="第 4 關"></button>
+        <button class="hotspot hole h5" id="hole5" type="button" aria-label="第 5 關"></button>
+        <button class="hotspot hole h6" id="hole6" type="button" aria-label="第 6 關"></button>
+        <button class="hotspot hole h7" id="hole7" type="button" aria-label="第 7 關"></button>
+        <button class="hotspot hole h8" id="hole8" type="button" aria-label="第 8 關"></button>
+        <button class="hotspot hole h9" id="hole9" type="button" aria-label="第 9 關"></button>
+        <button class="hotspot start" id="mapActionBtn" type="button" aria-label="開始挑戰"></button>
+        <button class="hotspot australia" type="button" aria-label="前往 Australia"></button>
+      </section>
+    </main>
+
+    <section id="challengeScreen" class="challenge-screen hidden" aria-label="關卡挑戰">
+      <div class="challenge-card">
+        <div class="challenge-top">
+          <button class="back-btn" type="button" onclick="backToMap()" aria-label="返回地圖">←</button>
+          <h1 id="holeTitle">HOLE 1</h1>
+        </div>
+        <div class="challenge-body">
+          <div class="question" id="questionText"></div>
+          <div id="interactionArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="endingScreen" class="ending-screen hidden" aria-label="完成挑戰">
+      <div class="ending-card">
+        <div class="big-emoji" aria-hidden="true">🦘⛳🐨🎉</div>
+        <h1>Mission Complete!</h1>
+        <p>
+          Aven 成功征服澳洲九洞高爾夫挑戰！<br />
+          願你在澳洲每一桿都 Straight，每一天都 Birdie，人生挑戰都 Hole in One！ 🇦🇺
+        </p>
+        <button class="main-btn" type="button" onclick="location.reload()">再玩一次</button>
+      </div>
+    </section>
+
+    <script>
+      // 已全面更新為全選擇題模式與正確答案索引 (0=A, 1=B, 2=C, 3=D)
+      const gameData = [
+        {
+          hole: 1,
+          mode: "choice",
+          question: "第一洞：請問高中時，維的座號是多少？",
+          options: ["(A) 13號", "(B) 15號", "(C) 16號", "(D) 19號"],
+          answer: 1 // 答案 (B)
+        },
+        {
+          hole: 2,
+          mode: "choice",
+          question: "第二洞：請問豆腐的國中是哪一間？",
+          options: ["(A) 信義國中", "(B) 再興中學", "(C) 興雅國中", "(D) 僅小學畢業"],
+          answer: 2 // 答案 (C)
+        },
+        {
+          hole: 3,
+          mode: "choice",
+          question: "第三洞：請問目前 8 人群組名稱是什麼？",
+          options: ["(A) 一抹維笑", "(B) 晴問林要稍韋嘉熱維波宜夏馬", "(C) 維冰去糖Aven芒果綠", "(D) 胖胖馬特"],
+          answer: 2 // 答案 (C)
+        },
+        {
+          hole: 4,
+          mode: "choice",
+          question: "第四洞：請問梅森本名叫什麼？",
+          options: ["(A) 林紹鵬", "(B) 林紹鵬", "(C) 林紹彭", "(D) 林紹彭"], // 依文字修正呈現
+          answer: 0 // 答案 (A)
+        },
+        {
+          hole: 5,
+          mode: "choice",
+          question: "第五洞：請問 611 是位於哪個鄰里？",
+          options: ["(A) 三張里", "(B) 三犁里", "(C) 三鄰里", "(D) 三民里"],
+          answer: 1 // 答案 (B)
+        },
+        {
+          hole: 6,
+          mode: "choice",
+          question: "第六洞：請問波羅氏是哪一年被收編的？",
+          options: ["(A) 2020.11", "(B) 2019.5", "(C) 2023.3", "(D) 2021.9"],
+          answer: 3 // 答案 (D)
+        },
+        {
+          hole: 7,
+          mode: "choice",
+          question: "第七洞：請問目前 JO 揮桿最遠碼數是多少？",
+          options: ["(A) 200碼", "(B) 210碼", "(C) 220碼", "(D) 300碼"],
+          answer: 1 // 答案 (B)
+        },
+        {
+          hole: 8,
+          mode: "choice",
+          question: "第八洞：澳洲袋鼠過馬路時，高爾夫球場的規則是？",
+          options: ["(A) 讓袋鼠先過並合照", "(B) 當作障礙物繼續打"],
+          answer: 0 // 答案 (A)
+        },
+        {
+          hole: 9,
+          mode: "choice",
+          question: "第九洞：請問 Amy 拿到哪一款星星人？",
+          options: ["(A) 風中凌亂", "(B) 雨天小鎧甲", "(C) 揹著太陽跑", "(D) 高電量警告"],
+          answer: 2 // 答案 (C)
+        }
+      ];
+
+      let currentHole = 0;
+
+      const mapScreen = document.getElementById("mapScreen");
+      const challengeScreen = document.getElementById("challengeScreen");
+      const endingScreen = document.getElementById("endingScreen");
+      const mapActionBtn = document.getElementById("mapActionBtn");
+
+      mapActionBtn.addEventListener("click", enterHole);
+
+      for (let i = 1; i <= 9; i += 1) {
+        document.getElementById(`hole${i}`).addEventListener("click", () => {
+          if (i === currentHole + 1) {
+            enterHole();
+            return;
+          }
+
+          if (i <= currentHole) {
+            alert(`第 ${i} 洞已經完成囉！`);
+            return;
+          }
+
+          alert(`第 ${i} 洞還沒解鎖，先完成第 ${currentHole + 1} 洞！`);
+        });
+      }
+
+      function updateMap() {
+        for (let i = 1; i <= 9; i += 1) {
+          const el = document.getElementById(`hole${i}`);
+          el.classList.remove("active", "passed", "locked");
+
+          if (i < currentHole + 1) {
+            el.classList.add("passed");
+          } else if (i === currentHole + 1) {
+            el.classList.add("active");
+          } else {
+            el.classList.add("locked");
+          }
+        }
+
+        if (currentHole < gameData.length) {
+          mapActionBtn.setAttribute("aria-label", `進入第 ${currentHole + 1} 洞挑戰`);
+        } else {
+          mapActionBtn.setAttribute("aria-label", "挑戰完成！");
+        }
+      }
+
+      function enterHole() {
+        if (currentHole >= gameData.length) {
+          showEnding();
+          return;
+        }
+        mapScreen.classList.add("hidden");
+        challengeScreen.classList.remove("hidden");
+        loadChallenge();
+      }
+
+      function backToMap() {
+        challengeScreen.classList.add("hidden");
+        mapScreen.classList.remove("hidden");
+        updateMap();
+      }
+
+      function loadChallenge() {
+        const data = gameData[currentHole];
+        document.getElementById("holeTitle").textContent = `HOLE ${data.hole}`;
+        document.getElementById("questionText").textContent = data.question;
+
+        const area = document.getElementById("interactionArea");
+        area.innerHTML = "";
+
+        if (data.mode === "choice") {
+          const optionsDiv = document.createElement("div");
+          optionsDiv.className = "options";
+
+          data.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.type = "button";
+            btn.textContent = opt;
+            btn.addEventListener("click", () => {
+              if (index === data.answer) {
+                successHole();
+              } else {
+                alert("❌ Ball in Hazard！球飛進水池或沙坑了，罰一桿再試一次！");
+              }
+            });
+            optionsDiv.appendChild(btn);
+          });
+
+          area.appendChild(optionsDiv);
+        }
+      }
+
+      function successHole() {
+        alert("🎉 NICE SHOT！小白球順利進洞！");
+        currentHole += 1;
+
+        if (currentHole >= gameData.length) {
+          showEnding();
+          return;
+        }
+
+        challengeScreen.classList.add("hidden");
+        mapScreen.classList.remove("hidden");
+        updateMap();
+      }
+
+      function showEnding() {
+        challengeScreen.classList.add("hidden");
+        mapScreen.classList.add("hidden");
+        endingScreen.classList.remove("hidden");
+      }
+
+      updateMap();
+    </script>
+  </body>
+</html>
